@@ -68,13 +68,11 @@ non-infringement.
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-using IGameComponent = Microsoft.Xna.Framework.IGameComponent;
+using Microsoft.Xna.Framework;
 
 using NUnit.Framework;
 
@@ -142,101 +140,93 @@ namespace MonoGame.Tests.Visual {
 					result.Similarity, result.CapturedImagePath, result.ReferenceImagePath);
 		}
 
-		protected static void WriteFrameComparisonDiffs(
+		protected static void WriteFrameComparisonDiffs (
 			IEnumerable<FrameComparisonResult> results, string directory)
 		{
 			try {
 				Directory.CreateDirectory (directory);
-			} catch (IOException) { }
+			} catch (IOException) {
+			}
 
 			foreach (var result in results) {
 
-				string diffFileName = string.Format(
+				string diffFileName = string.Format (
 					"diff-{0}-{1}.png",
-					Path.GetFileNameWithoutExtension(result.ReferenceImagePath),
-					Path.GetFileNameWithoutExtension(result.CapturedImagePath));
+					Path.GetFileNameWithoutExtension (result.ReferenceImagePath),
+					Path.GetFileNameWithoutExtension (result.CapturedImagePath));
 
-				string diffOutputPath = Path.Combine(directory, diffFileName);
 
-				using (var a = (Bitmap)Bitmap.FromFile(result.ReferenceImagePath))
-				using (var b = (Bitmap)Bitmap.FromFile(result.CapturedImagePath))
-				using (var diff = CreateDiff(a, b)) {
-					diff.Save(diffOutputPath);
-				}
+				string diffOutputPath = Path.Combine (directory, diffFileName);
+
+				var a = FramePixelData.FromFile (result.ReferenceImagePath);
+				var b = FramePixelData.FromFile (result.CapturedImagePath);
+				var diff = CreateDiff (a, b);
+				Normalize (diff);
+				diff.Save (diffOutputPath);
 			}
 		}
 
-		private static Bitmap CreateDiff(Bitmap a, Bitmap b)
+		private static FramePixelData CreateDiff (FramePixelData a, FramePixelData b)
 		{
 			int minWidth, maxWidth, minHeight, maxHeight;
 
 			MathUtility.MinMax (a.Width, b.Width, out minWidth, out maxWidth);
 			MathUtility.MinMax (a.Height, b.Height, out minHeight, out maxHeight);
 
-			var diff = new Bitmap(maxWidth, maxHeight);
-
-			var aData = a.LockBits(
-				new Rectangle(0, 0, a.Width, a.Height),
-				ImageLockMode.ReadOnly,
-				PixelFormat.Format32bppArgb);
-			var bData = b.LockBits(
-				new Rectangle(0, 0, b.Width, b.Height),
-				ImageLockMode.ReadOnly,
-				PixelFormat.Format32bppArgb);
-			var diffData = diff.LockBits(
-				new Rectangle(0, 0, diff.Width, diff.Height),
-				ImageLockMode.ReadWrite,
-				PixelFormat.Format32bppArgb);
-
-			try {
-				CreateDiff(aData, bData, diffData);
-			} finally {
-				a.UnlockBits(aData);
-				b.UnlockBits(bData);
-				diff.UnlockBits(diffData);
-			}
-
-			return diff;
-		}
-
-		private static unsafe void CreateDiff(
-			BitmapData aData, BitmapData bData, BitmapData diffData)
-		{
-			int minWidth, maxWidth, minHeight, maxHeight;
-
-			MathUtility.MinMax (aData.Width, bData.Width, out minWidth, out maxWidth);
-			MathUtility.MinMax (aData.Height, bData.Height, out minHeight, out maxHeight);
-
-			var pRowA = (byte*)aData.Scan0;
-			var pRowB = (byte*)bData.Scan0;
-			var pRowDiff = (byte*)diffData.Scan0;
+			var diff = new FramePixelData (maxWidth, maxHeight);
 
 			for (int y = 0; y < minHeight; ++y) {
 
-				var pPixelA = (PixelArgb*)pRowA;
-				var pPixelB = (PixelArgb*)pRowB;
-				var pPixelDiff = (PixelArgb*)pRowDiff;
+				int indexA = y * a.Width;
+				int indexB = y * b.Width;
+				int indexDiff = y * diff.Width;
 
 				for (int x = 0; x < minWidth; ++x) {
-					pPixelDiff->B = (byte) (pPixelA->B ^ pPixelB->B);
-					pPixelDiff->G = (byte) (pPixelA->G ^ pPixelB->G);
-					pPixelDiff->R = (byte) (pPixelA->R ^ pPixelB->R);
-					pPixelDiff->A = 0xff;
 					// Ignore alpha.  If alpha diffs are
 					// needed, a special strategy will have
 					// to be devised, since XOR'ing two
 					// opaque pixels will cause a totally
 					// transparent pixel and hide any other
 					// difference.
+					diff.Data [indexDiff] = new Color (
+						(byte) (a.Data [indexA].R ^ b.Data [indexB].R),
+						(byte) (a.Data [indexA].G ^ b.Data [indexB].G),
+						(byte) (a.Data [indexA].B ^ b.Data [indexB].B));
 
-					pPixelA++;
-					pPixelB++;
-					pPixelDiff++;
+					indexA++;
+					indexB++;
+					indexDiff++;
 				}
+			}
 
-				pRowA += aData.Stride;
-				pRowB += bData.Stride;
-				pRowDiff += diffData.Stride;
+			return diff;
+		}
+
+		private static void Normalize (FramePixelData frame)
+		{
+			Color max = new Color(0, 0, 0, 0);
+			foreach (var pixel in frame.Data) {
+				max.B = Math.Max (pixel.B, max.B);
+				max.G = Math.Max (pixel.G, max.G);
+				max.R = Math.Max (pixel.R, max.R);
+				max.A = Math.Max (pixel.A, max.A);
+			}
+
+			if (max.B == 0) max.B = 255;
+			if (max.G == 0) max.G = 255;
+			if (max.R == 0) max.R = 255;
+			if (max.A == 0) max.A = 255;
+
+			for (int i = 0; i < frame.Data.Length; ++i) {
+				Color pixel = frame.Data[i];
+
+
+				pixel.B = (byte)(pixel.B * 255 / max.B);
+				pixel.G = (byte)(pixel.G * 255 / max.G);
+				pixel.R = (byte)(pixel.R * 255 / max.R);
+				pixel.A = (byte)(pixel.A * 255 / max.A);
+
+				frame.Data[i] = pixel;
 			}
 		}
 

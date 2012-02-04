@@ -72,8 +72,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 using Microsoft.Xna.Framework;
+
+#if IPHONE
+using MonoTouch.Foundation;
+using MonoTouch.UIKit;
+#endif
 
 namespace MonoGame.Tests {
 	class TestGameBase : Game, IFrameInfoSource {
@@ -103,10 +109,60 @@ namespace MonoGame.Tests {
 		{
 #if XNA
 			base.Run ();
+#elif IPHONE || ANDROID
+			RunOnMainThreadAndWait();
 #else
 			base.Run (GameRunBehavior.Synchronous);
 #endif
 		}
+
+#if IPHONE || ANDROID
+		private void RunOnMainThreadAndWait()
+		{
+			var exitEvent = new ManualResetEvent(false);
+			var exitHandler = new EventHandler<EventArgs>(
+				(sender, e) => exitEvent.Set ());
+
+			Exiting += exitHandler;
+			try {
+				InvokeRunOnMainThread();
+				var maxExecutionTime = TimeSpan.FromSeconds(30);
+				if (!exitEvent.WaitOne (maxExecutionTime)) {
+					throw new TimeoutException (string.Format (
+						"Game.Run timed out.  Maximum execution time is {0}.",
+						maxExecutionTime));
+				}
+			}
+			finally {
+				Exiting -= exitHandler;
+			}
+		}
+#endif
+
+#if IPHONE
+		private void InvokeRunOnMainThread()
+		{
+			Exception ex = null;
+			UIApplication.SharedApplication.InvokeOnMainThread(() => {
+				try {
+					base.Run (GameRunBehavior.Asynchronous);
+				} catch (Exception innerEx) {
+					ex = innerEx;
+				}
+			});
+
+			if (ex != null)
+				throw ex;
+		}
+#endif
+
+#if ANDROID
+		private void InvokeRunOnMainThread()
+		{
+			throw new NotImplementedException(
+				"Android need to implement TestGameBase.InvokeRunOnMainThread");
+		}
+#endif
 
 		protected override void Update (GameTime gameTime)
 		{

@@ -77,8 +77,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-using Moq;
-
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -106,11 +104,7 @@ namespace MonoGame.Tests {
 				public Content ()
 					: base (g => g.Content)
 				{
-					var mockServiceProvider = new Mock<IServiceProvider> ();
-					mockServiceProvider.Setup (x => x.GetService (It.IsAny<Type> ()))
-					.Returns (null);
-
-					AddLegalValue (new ContentManager (mockServiceProvider.Object));
+					AddLegalValue (new ContentManager (new GameServiceContainer ()));
 
 					AddIllegalValue<ArgumentNullException> (null);
 				}
@@ -150,25 +144,18 @@ namespace MonoGame.Tests {
 				public void Is_invalid_without_IGraphicsDeviceService ()
 				{
 					Assert.IsNull (Game.Services.GetService (typeof (IGraphicsDeviceService)));
-					Assert.Throws<InvalidOperationException> (() =>
-										  {
-											  var device = ThisProperty;
-										  });
+					Assert.Throws<InvalidOperationException> (() => {
+						var device = ThisProperty;
+					});
 				}
 
 				[Test]
 				public void Is_valid_with_IGraphicsDeviceService ()
 				{
-					// TODO: It might be nice to try to use a real, live
-					//       GraphicsDevice here rather than null.
-					GraphicsDevice graphicsDevice = null;
-					var mockService = new Mock<IGraphicsDeviceService> ();
-					mockService.Setup (service => service.GraphicsDevice)
-					.Returns ((GraphicsDevice) graphicsDevice);
+					var service = new MockGraphicsDeviceService ();
+					Game.Services.AddService (typeof (IGraphicsDeviceService), service);
 
-					Game.Services.AddService (typeof (IGraphicsDeviceService), mockService.Object);
-
-					Assert.That (Game, HasThisProperty.SameAs (graphicsDevice));
+					Assert.That (Game, HasThisProperty.SameAs (service.GraphicsDevice));
 				}
 
 				[Test]
@@ -176,6 +163,18 @@ namespace MonoGame.Tests {
 				{
 					Game.MakeGraphical ();
 					Assert.That (Game, HasThisProperty.Null);
+				}
+
+				private class MockGraphicsDeviceService : IGraphicsDeviceService
+				{
+					public event EventHandler<EventArgs> DeviceCreated;
+					public event EventHandler<EventArgs> DeviceDisposing;
+					public event EventHandler<EventArgs> DeviceReset;
+					public event EventHandler<EventArgs> DeviceResetting;
+
+					// TODO: It might be nice to try to use a real, live
+					//       GraphicsDevice here rather than null.
+					public GraphicsDevice GraphicsDevice { get { return null; } }
 				}
 			}
 
@@ -345,7 +344,7 @@ namespace MonoGame.Tests {
 					get {
 						if (!_defaultValue.HasValue)
 							throw new InvalidOperationException (
-								      "DefaultValue has never been set.");
+								"DefaultValue has never been set.");
 						return _defaultValue.Value;
 					}
 					set {
@@ -388,8 +387,8 @@ namespace MonoGame.Tests {
 			}
 
 			abstract class ReadOnlyPropertyFixtureBase<PropertyT> : PropertyFixtureBase<PropertyT> {
-				protected ReadOnlyPropertyFixtureBase (Expression<Func<Game,
-										       PropertyT> > propertyExpression)
+				protected ReadOnlyPropertyFixtureBase (
+					Expression<Func<Game, PropertyT> > propertyExpression)
 					: base (propertyExpression)
 				{ }
 
@@ -404,8 +403,8 @@ namespace MonoGame.Tests {
 			}
 
 			abstract class ReadWritePropertyFixtureBase<PropertyT> : PropertyFixtureBase<PropertyT> {
-				protected ReadWritePropertyFixtureBase (Expression<Func<Game,
-											PropertyT> > propertyExpression)
+				protected ReadWritePropertyFixtureBase (
+					Expression<Func<Game, PropertyT>> propertyExpression)
 					: base (propertyExpression)
 				{ }
 
@@ -445,9 +444,10 @@ namespace MonoGame.Tests {
 					get { return _legalValues; }
 				}
 
-				private List<Tuple<PropertyT, Type> > _illegalValues = new List<Tuple<PropertyT, Type> > ();
+				private List<Tuple<PropertyT, Type>> _illegalValues =
+					new List<Tuple<PropertyT, Type>> ();
 
-				protected List<Tuple<PropertyT, Type> > IllegalValues {
+				protected List<Tuple<PropertyT, Type>> IllegalValues {
 					get { return _illegalValues; }
 				}
 
