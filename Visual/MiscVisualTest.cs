@@ -71,15 +71,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using NUnit.Framework;
-
 using Microsoft.Xna.Framework;
+
+using NUnit.Framework;
 
 using MonoGame.Tests.Components;
 
 namespace MonoGame.Tests.Visual {
 	[TestFixture]
-	class IntermediateVisualTest : VisualTestFixtureBase {
+	class BasicVisualTest : VisualTestFixtureBase {
+
+		private const string ClearFolder = "Clear";
+		[Test, RequiresSTA]
+		public void Clear ()
+		{
+			var colors = new Color [] {
+				Color.Red,
+				Color.Orange,
+				Color.Yellow,
+				Color.Green,
+				Color.Blue,
+				Color.Indigo,
+				Color.Violet
+			};
+
+			TestComponent("frame",
+			              new ClearComponent (Game) {
+			                  ColorFunction = x => colors[x.DrawNumber - 1]
+			              },
+			              ClearFolder,
+			              colors.Length);
+		}
+
+		private const string LabelledFrameFolder = "LabelledFrame";
+		[Test, RequiresSTA]
+		public void Labelled_frame ()
+		{
+			TestComponents("frame", new IGameComponent[] {
+			                            new ClearComponent (Game) { ColorFunction = x => Color.Red },
+			                            new DrawFrameNumberComponent (Game) },
+			               LabelledFrameFolder,
+			               5);
+		}
+
+		private const string ImplicitDrawOrderFolder = "ImplicitDrawOrder";
+		[Test, RequiresSTA]
+		public void DrawOrder_falls_back_to_order_of_addition_to_Game ()
+		{
+			TestComponents("frame", new IGameComponent[] {
+			                            new ClearComponent (Game) { ColorFunction = x => Color.CornflowerBlue },
+			                            new ImplicitDrawOrderComponent (Game) },
+			               ImplicitDrawOrderFolder,
+			               4);
+		}
+
 		private const string Draw2DFolder = "Draw2D";
 		[Test, RequiresSTA]
 		public void Draw2D ()
@@ -104,6 +149,35 @@ namespace MonoGame.Tests.Visual {
 				Paths.CapturedFrameDiff(Draw2DFolder));
 			AssertFrameComparisonResultsPassed (
 				frameComparer.Results, Constants.StandardRequiredSimilarity, 10);
+		}
+
+		[Test, RequiresSTA]
+		public void Colored3DCube ()
+		{
+			TestComponent(new Colored3DCubeComponent(Game),
+			               "Colored3DCube");
+		}
+
+		[Test, RequiresSTA]
+		public void TexturedQuad_no_lighting ()
+		{
+			TestComponent(new TexturedQuadComponent(Game, false),
+			               "TexturedQuad");
+		}
+
+		[Test, RequiresSTA]
+		public void TexturedQuad_lighting ()
+		{
+			TestComponent(new TexturedQuadComponent(Game, true),
+			               "TexturedQuad");
+		}
+
+		[Test, RequiresSTA]
+		public void SpaceshipModel ()
+		{
+			TestComponent(new SpaceshipModelDrawComponent(Game),
+			              "SpaceshipModel",
+			              20);
 		}
 	}
 }
