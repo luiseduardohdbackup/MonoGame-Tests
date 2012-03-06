@@ -101,9 +101,14 @@
     <Compile Include="Components\SpriteShaderComponent.cs" />
     <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
-    <Compile Include="Components\TexturedQuadComponent.cs" />
-    <Compile Include="Components\SpaceshipModelDrawComponent.cs" />
     <Compile Include="Visual\MiscVisualTest.cs" />
+    <Compile Include="Interface\AggregateTestFilter.cs" />
+    <Compile Include="Interface\RegexTestFilter.cs" />
+    <Compile Include="Interface\RunOptions.cs" />
+    <Compile Include="Interface\TestEventListenerBase.cs" />
+    <Compile Include="Interface\TestFilterAction.cs" />
+    <Compile Include="FramePixelData.cs" />
+    <Compile Include="Desktop\FramePixelData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -132,7 +137,7 @@
     <Folder Include="Interface\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\tests.xsl">
+    <Content Include="TestResources\tests.xsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

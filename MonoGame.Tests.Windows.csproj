@@ -48,23 +48,24 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>Libs\Moq.dll</HintPath>
-    </Reference>
     <Reference Include="NDesk.Options">
       <HintPath>Libs\NDesk.Options.dll</HintPath>
     </Reference>
     <Reference Include="nunit.core, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>Libs\nunit.core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="nunit.core.interfaces, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>Libs\nunit.core.interfaces.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.6.0.12051, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="nunit.util, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>Libs\nunit.util.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -87,11 +88,18 @@
     <Compile Include="Components\VisualTestDrawableGameComponent.cs" />
     <Compile Include="Components\VisualTestGameComponent.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Desktop\FramePixelData.cs" />
     <Compile Include="FrameInfo.cs" />
+    <Compile Include="FramePixelData.cs" />
     <Compile Include="GameTest+Methods.cs" />
     <Compile Include="GameTest+Properties.cs" />
     <Compile Include="GameTest.cs" />
+    <Compile Include="Interface\AggregateTestFilter.cs" />
     <Compile Include="Interface\CommandLineInterface.cs" />
+    <Compile Include="Interface\RegexTestFilter.cs" />
+    <Compile Include="Interface\RunOptions.cs" />
+    <Compile Include="Interface\TestEventListenerBase.cs" />
+    <Compile Include="Interface\TestFilterAction.cs" />
     <Compile Include="PixelArgb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGameBase.cs" />
@@ -104,7 +112,6 @@
     <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
     <Compile Include="Components\TexturedQuadComponent.cs" />
-    <Compile Include="Components\SpaceshipModelDrawComponent.cs" />
     <Compile Include="Visual\MiscVisualTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -118,7 +125,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\tests.xsl">
+    <Content Include="TestResources\tests.xsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

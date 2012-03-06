@@ -70,7 +70,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -132,7 +131,7 @@ namespace MonoGame.Tests.Components {
 		/// <returns>A floating point value from 0.0f to 1.0f that
 		/// represents the similarity of the two frames, according to
 		/// this IFrameComparer implementation.</returns>
-		float Compare (BitmapData a, BitmapData b);
+		float Compare (FramePixelData a, FramePixelData b);
 	}
 
 	class FrameCompareComponent : DrawableGameComponent, IEnumerable<IFrameComparer> {
@@ -315,7 +314,7 @@ namespace MonoGame.Tests.Components {
 		private void CompareAndWriteWorker ()
 		{
 			// HACK: This should not be needed!
-			Paths.SetStandardWorkingDirectory();
+			Paths.SetStandardWorkingDirectory ();
 
 			lock (_resultsSync) {
 				while (true) {
@@ -324,27 +323,27 @@ namespace MonoGame.Tests.Components {
 						break;
 
 					if (workItem.FrameOutputPath != null) {
-						var directory = Path.GetDirectoryName(workItem.FrameOutputPath);
-						if (!Directory.Exists(directory))
-							Directory.CreateDirectory(directory);
+						var directory = Path.GetDirectoryName (workItem.FrameOutputPath);
+						if (!Directory.Exists (directory))
+							Directory.CreateDirectory (directory);
 					}
 
 					float similarity;
-					using (Bitmap
-						frame = CreateBitmapFromTextureData (
-							workItem.TextureData,
-							workItem.TextureWidth,
-							workItem.TextureHeight),
-						compareImage = LoadOrCreateEmptyBitmap (workItem.ReferenceImagePath)) {
 
-						similarity = CompareBitmaps (frame, compareImage, workItem.FrameComparers);
+					var framePixelData = new FramePixelData (
+						workItem.TextureWidth, workItem.TextureHeight, workItem.TextureData);
+					var comparePixelData = LoadOrCreateEmptyFramePixelData (workItem.ReferenceImagePath);
 
-						if (workItem.FrameOutputPath != null) {
-							try {
-								frame.Save (workItem.FrameOutputPath);
-							} catch (IOException) {
-								// FIXME: Report this error somehow.
-							}
+					similarity = CompareFrames (
+						framePixelData,
+						comparePixelData,
+						workItem.FrameComparers);
+
+					if (workItem.FrameOutputPath != null) {
+						try {
+							framePixelData.Save (workItem.FrameOutputPath);
+						} catch (IOException) {
+							// FIXME: Report this error somehow.
 						}
 					}
 
@@ -359,34 +358,21 @@ namespace MonoGame.Tests.Components {
 			}
 		}
 
-		private static float CompareBitmaps (
-			Bitmap a, Bitmap b,
+		private static float CompareFrames (
+			FramePixelData a, FramePixelData b,
 			Tuple<IFrameComparer, float> [] frameComparers)
 		{
-			var lockRectA = new System.Drawing.Rectangle (0, 0, a.Width, a.Height);
-			var lockRectB = new System.Drawing.Rectangle (0, 0, b.Width, b.Height);
-
 			float sumOfWeights = 0;
 			foreach (var item in frameComparers) {
 				sumOfWeights += item.Item2;
 			}
 
 			float similarity = 0;
-			BitmapData aData = a.LockBits (lockRectA, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			BitmapData bData = b.LockBits (lockRectB, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			try {
-
-				foreach (var item in frameComparers) {
-					var comparer = item.Item1;
-					var weight = item.Item2;
-					similarity += comparer.Compare (aData, bData) * weight / sumOfWeights;
-				}
-
-			} finally {
-				a.UnlockBits (aData);
-				b.UnlockBits (bData);
+			foreach (var item in frameComparers) {
+				var comparer = item.Item1;
+				var weight = item.Item2;
+				similarity += comparer.Compare (a, b) * weight / sumOfWeights;
 			}
-
 			return similarity;
 		}
 
@@ -397,46 +383,15 @@ namespace MonoGame.Tests.Components {
 			return data;
 		}
 
-		private unsafe static Bitmap CreateBitmapFromTextureData (XnaColor [] textureData, int width, int height)
-		{
-			var bitmap = new Bitmap (width, height);
-			var bitmapData = bitmap.LockBits (
-				new System.Drawing.Rectangle (0, 0, width, height),
-				ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-			try {
-				byte* pDestRow = (byte*) bitmapData.Scan0;
-				byte* pDestEnd = pDestRow + (height * bitmapData.Stride);
-
-				int index = 0;
-				while (pDestRow < pDestEnd) {
-					int* pDestPixel = (int*) pDestRow;
-					int* pDestRowEnd = pDestPixel + width;
-					while (pDestPixel < pDestRowEnd) {
-						var sourceColor = textureData [index++];
-						*pDestPixel++ =
-							(sourceColor.A << 24) |
-							(sourceColor.R << 16) |
-							(sourceColor.G << 8) |
-							sourceColor.B;
-					}
-					pDestRow += bitmapData.Stride;
-				}
-			} finally {
-				bitmap.UnlockBits (bitmapData);
-			}
-			return bitmap;
-		}
-
-		private static Bitmap LoadOrCreateEmptyBitmap (string path)
+		private static FramePixelData LoadOrCreateEmptyFramePixelData (string path)
 		{
 			try {
-				return (Bitmap)Bitmap.FromFile (path);
+				return FramePixelData.FromFile (path);
 			} catch (FileNotFoundException) {
 				// TODO: It would be nice to communicate
 				//       information about what went wrong, when
 				//       things go wrong.
-				return new Bitmap (1, 1);
+				return new FramePixelData (0, 0, new XnaColor[0]);
 			}
 		}
 
@@ -505,7 +460,7 @@ namespace MonoGame.Tests.Components {
 			_value = value;
 		}
 
-		public float Compare (BitmapData a, BitmapData b)
+		public float Compare (FramePixelData a, FramePixelData b)
 		{
 			return _value;
 		}

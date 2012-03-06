@@ -80,7 +80,6 @@ using MonoGame.Tests.Components;
 namespace MonoGame.Tests.Visual {
 	[TestFixture]
 	class BasicVisualTest : VisualTestFixtureBase {
-
 		private const string ClearFolder = "Clear";
 		[Test, RequiresSTA]
 		public void Clear ()
@@ -158,26 +157,26 @@ namespace MonoGame.Tests.Visual {
 			               "Colored3DCube");
 		}
 
-		[Test, RequiresSTA]
-		public void TexturedQuad_no_lighting ()
-		{
-			TestComponent(new TexturedQuadComponent(Game, false),
-			               "TexturedQuad");
-		}
+//		[Test, RequiresSTA]
+//		public void TexturedQuad_no_lighting ()
+//		{
+//			TestComponent(new TexturedQuadComponent(Game, false),
+//			               "TexturedQuad");
+//		}
+//
+//		[Test, RequiresSTA]
+//		public void TexturedQuad_lighting ()
+//		{
+//			TestComponent(new TexturedQuadComponent(Game, true),
+//			               "TexturedQuad");
+//		}
 
-		[Test, RequiresSTA]
-		public void TexturedQuad_lighting ()
-		{
-			TestComponent(new TexturedQuadComponent(Game, true),
-			               "TexturedQuad");
-		}
-
-		[Test, RequiresSTA]
-		public void SpaceshipModel ()
-		{
-			TestComponent(new SpaceshipModelDrawComponent(Game),
-			              "SpaceshipModel",
-			              20);
-		}
+//		[Test, RequiresSTA]
+//		public void SpaceshipModel ()
+//		{
+//			TestComponent(new SpaceshipModelDrawComponent(Game),
+//			              "SpaceshipModel",
+//			              20);
+//		}
 	}
 }

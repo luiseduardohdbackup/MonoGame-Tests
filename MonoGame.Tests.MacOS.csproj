@@ -86,8 +86,14 @@
     <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
     <Compile Include="Components\TexturedQuadComponent.cs" />
-    <Compile Include="Components\SpaceshipModelDrawComponent.cs" />
     <Compile Include="Visual\MiscVisualTest.cs" />
+    <Compile Include="FramePixelData.cs" />
+    <Compile Include="Desktop\FramePixelData.cs" />
+    <Compile Include="Interface\AggregateTestFilter.cs" />
+    <Compile Include="Interface\RegexTestFilter.cs" />
+    <Compile Include="Interface\RunOptions.cs" />
+    <Compile Include="Interface\TestEventListenerBase.cs" />
+    <Compile Include="Interface\TestFilterAction.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.MacOS.csproj">
@@ -105,9 +111,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MacOS\" />
+    <Folder Include="Desktop\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\tests.xsl">
+    <Content Include="TestResources\tests.xsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

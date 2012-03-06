@@ -68,13 +68,14 @@ non-infringement.
 
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Xna.Framework;
+
 namespace MonoGame.Tests.Components {
 	class PixelDeltaFrameComparer : IFrameComparer {
-		public unsafe float Compare (BitmapData a, BitmapData b)
+		public float Compare (FramePixelData a, FramePixelData b)
 		{
 			int minWidth, maxWidth, minHeight, maxHeight;
 
@@ -85,31 +86,40 @@ namespace MonoGame.Tests.Components {
 
 			long error = 0;
 
-			byte* pRowA = (byte*) a.Scan0;
-			byte* pRowB = (byte*) b.Scan0;
+			int index = 0;
 			for (int y = 0; y < rect.Height; ++y) {
-				PixelArgb* pPixelA = (PixelArgb*) pRowA;
-				PixelArgb* pPixelB = (PixelArgb*) pRowB;
 				for (int x = 0; x < rect.Width; ++x) {
-					error += pPixelA->Delta (pPixelB);
-					pPixelA++;
-					pPixelB++;
+					error += Delta (a.Data [index], b.Data [index]);
+					index++;
 				}
-
-				pRowA += a.Stride;
-				pRowB += b.Stride;
 			}
 
+			// FIXME: To temporarily accommodate the differing
+			//        resolutions of mobile platforms, we just
+			//        ignore all non-overlapping pixels.  This
+			//        is not ideal, but it's good enough for now.
 			// Mark all out-of-bounds pixels as non-match.
-			error += PixelArgb.MaxDelta * ((maxWidth * maxHeight) - (minWidth * minHeight));
+			//error += PixelArgb.MaxDelta * ((maxWidth * maxHeight) - (minWidth * minHeight));
 
-			var dissimilarity = ((float) error / (float) (PixelArgb.MaxDelta * maxWidth * maxHeight));
+			var dissimilarity = ((float) error / (float) (PixelArgb.MaxDelta * minWidth * minHeight));
 
 			// Project dissimilarity to a logarithmic scale.  The
 			// difference between having zero pixels wrong and one
 			// pixel wrong is more significant than the difference
 			// betweeen 10,000 wrong and 10,001.
-			return 1.0f - (float)Math.Pow(dissimilarity, 0.5);
+			return 1.0f - (float) Math.Pow (dissimilarity, 0.5);
+		}
+
+		private static int Delta (Color a, Color b)
+		{
+			if (a.PackedValue == b.PackedValue)
+				return 0;
+
+			return
+				Math.Abs (a.B - b.B) +
+				Math.Abs (a.G - b.G) +
+				Math.Abs (a.R - b.R) +
+				Math.Abs (a.A - b.A);
 		}
 	}
 }
