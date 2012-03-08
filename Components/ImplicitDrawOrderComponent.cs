@@ -198,7 +198,7 @@ namespace MonoGame.Tests.Components {
 				float halfEx = _owner._font.MeasureString ("x").X / 2;
 				var position = new Vector2 (_number * halfEx, 0);
 
-				_spriteBatch.Begin ();
+				_spriteBatch.Begin (SpriteSortMode.Immediate, BlendState.AlphaBlend);
 				_spriteBatch.DrawString (_owner._font, _number.ToString (), position, _color);
 				_spriteBatch.End ();
 			}

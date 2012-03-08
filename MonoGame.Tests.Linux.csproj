@@ -86,8 +86,6 @@
     <Compile Include="TestGameBase.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Visual\VisualTestGame.cs" />
-    <Compile Include="Components\ClearComponent.cs" />
-    <Compile Include="Components\Draw2DComponent.cs" />
     <Compile Include="Components\DrawFrameNumberComponent.cs" />
     <Compile Include="Components\FrameCompareComponent.cs" />
     <Compile Include="Components\ImplicitDrawOrderComponent.cs" />
@@ -96,12 +94,7 @@
     <Compile Include="Components\UpdateGuard.cs" />
     <Compile Include="Components\VisualTestDrawableGameComponent.cs" />
     <Compile Include="Components\VisualTestGameComponent.cs" />
-    <Compile Include="Visual\FontVisualTest.cs" />
-    <Compile Include="Components\SpriteFontComponent.cs" />
-    <Compile Include="Components\SpriteShaderComponent.cs" />
-    <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
-    <Compile Include="Visual\MiscVisualTest.cs" />
     <Compile Include="Interface\AggregateTestFilter.cs" />
     <Compile Include="Interface\RegexTestFilter.cs" />
     <Compile Include="Interface\RunOptions.cs" />
@@ -109,6 +102,13 @@
     <Compile Include="Interface\TestFilterAction.cs" />
     <Compile Include="FramePixelData.cs" />
     <Compile Include="Desktop\FramePixelData.cs" />
+    <Compile Include="Components\FlexibleGameComponent.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Visual\MiscellaneousTests.cs" />
+    <Compile Include="Visual\ShaderTest.cs" />
+    <Compile Include="Visual\SpriteBatchTest.cs" />
+    <Compile Include="Visual\SpriteFontTest.cs" />
+    <Compile Include="Visual\ViewportTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

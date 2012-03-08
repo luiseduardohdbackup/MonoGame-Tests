@@ -91,7 +91,6 @@ namespace MonoGame.Tests
 			}
 
 			CoreExtensions.Host.InitializeService ();
-			CoreExtensions.Host.InstallBuiltins ();
 
 			var assembly = Assembly.GetExecutingAssembly ();
 

@@ -1,14 +1,17 @@
 <?xml version="1.0"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/TR/html4/strict.dtd">
-    <xsl:output method="html"/>
+<xsl:stylesheet
+    version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:output method="html" />
 
     <xsl:template match="/">
         <xsl:variable name="tests.root" select="test-results" />
+<xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html>
+</xsl:text>
 <html>
     <head>
-        <title>
-            <xsl:value-of select="$tests.root/@name" />
-        </title>
+        <title><xsl:value-of select="$tests.root/@name" /></title>
         <style>
         .plus {
             display: inline-block;
@@ -49,14 +52,34 @@
 
         body {
             font: 11pt helvetica, arial, sans-serif;
+            margin: 0;
         }
 
-        #summary {
-            background-color: #eeeeee;
+        h1 {
+            margin: 0.5ex 0;
+        }
+
+        div#header {
+            background-color: #eee;
+            border-bottom: 1px solid #ccc;
+            padding: 1ex;
+            padding-bottom: 0;
+            margin: 0;
         }
 
         #summary table th {
-            text-align: right;
+            text-align: center;
+            color: #999;
+            padding: 0.1ex 1ex;
+        }
+
+        #summary table td {
+            text-align: center;
+            padding: 0.1ex 1ex;
+        }
+
+        div#details {
+            padding: 1em;
         }
 
         #details blockquote {
@@ -75,6 +98,12 @@
             width: 25pt;
             border-bottom: 6pt solid transparent;
             vertical-align: text-bottom;
+        }
+
+        .progress-bar-big {
+            width: 100%;
+            height: 14pt;
+            border-bottom: 0;
         }
 
         .progress-bar .passed-progress {
@@ -114,7 +143,6 @@
             overflow: scroll;
         }
 
-
         </style>
     </head>
     <body>
@@ -125,6 +153,24 @@
         <div class="error" />
         <div class="check" />
         -->
+        <xsl:variable name="tests.total"
+            select="$tests.root/@total" />
+        <xsl:variable name="tests.errors"
+            select="$tests.root/@errors" />
+        <xsl:variable name="tests.failures"
+            select="$tests.root/@failures" />
+        <xsl:variable name="tests.ignored"
+            select="$tests.root/@ignored" />
+        <xsl:variable name="tests.skipped"
+            select="$tests.root/@skipped" />
+        <xsl:variable name="tests.inconclusive"
+            select="$tests.root/@inconclusive" />
+        <xsl:variable name="tests.passed"
+            select="$tests.total - $tests.errors - $tests.failures" />
+
+        <xsl:variable name="tests.grandtotal"
+            select="$tests.total + $tests.ignored + $tests.skipped" />
+
 
         <div id="report">
             <script>
@@ -145,32 +191,65 @@
                     }
                 }
             </script>
-            <h1><xsl:value-of select="$tests.root/@name" /> Results</h1>
-            <div id="summary">
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Assemblies tested:</th>
-                            <td><xsl:value-of select="count($tests.root)"/></td>
-                        </tr>
-                        <tr>
-                            <th>Tests executed:</th>
-                            <td><xsl:value-of select="count($tests.root//test-case[@executed = 'True'])"/></td>
-                        </tr>
-                        <tr>
-                            <th>Passes:</th>
-                            <td><xsl:value-of select="count($tests.root//test-case[@executed = 'True' and @success = 'True'])"/></td>
-                        </tr>
-                        <tr>
-                            <th>Fails:</th>
-                            <td><xsl:value-of select="count($tests.root//test-case[@executed = 'True' and @success = 'False'])"/></td>
-                        </tr>
-                        <tr>
-                            <th>Ignored:</th>
-                            <td><xsl:value-of select="count($tests.root//test-case[@executed = 'False'])"/></td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="header">
+                <h1><xsl:value-of select="$tests.root/@name" /></h1>
+                <div id="summary">
+                    <table>
+                        <tbody>
+                            <!--<tr>
+                                <th>Assemblies tested:</th>
+                                <td><xsl:value-of select="count($tests.root)"/></td>
+                            </tr>-->
+                            <tr>
+                                <th>executed</th>
+                                <th>pass</th>
+                                <xsl:if test="$tests.failures > 0"><th>fail</th></xsl:if>
+                                <xsl:if test="$tests.errors > 0"><th>error</th></xsl:if>
+                                <xsl:if test="$tests.inconclusive > 0"><th>inconclusive</th></xsl:if>
+                                <xsl:if test="$tests.ignored > 0"><th>ignored</th></xsl:if>
+                                <xsl:if test="$tests.skipped > 0"><th>skipped</th></xsl:if>
+                            </tr>
+                            <tr>
+                                <td><xsl:value-of select="$tests.total"/></td>
+                                <td><xsl:value-of select="$tests.passed"/></td>
+                                <xsl:if test="$tests.failures > 0">
+                                    <td><xsl:value-of select="$tests.failures"/></td>
+                                </xsl:if>
+                                <xsl:if test="$tests.errors > 0">
+                                    <td><xsl:value-of select="$tests.errors"/></td>
+                                </xsl:if>
+                                <xsl:if test="$tests.inconclusive > 0">
+                                    <td><xsl:value-of select="$tests.inconclusive"/></td>
+                                </xsl:if>
+                                <xsl:if test="$tests.ignored > 0">
+                                    <td><xsl:value-of select="$tests.ignored"/></td>
+                                </xsl:if>
+                                <xsl:if test="$tests.skipped > 0">
+                                    <td><xsl:value-of select="$tests.skipped" /></td>
+                                </xsl:if>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="progress-bar progress-bar-big">
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$tests.passed" />
+                    <xsl:with-param name="total" select="$tests.grandtotal" />
+                    <xsl:with-param name="class">passed-progress</xsl:with-param>
+                </xsl:call-template>
+
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$tests.ignored + $tests.skipped" />
+                    <xsl:with-param name="total" select="$tests.grandtotal" />
+                    <xsl:with-param name="class">ignored-progress</xsl:with-param>
+                </xsl:call-template>
+
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$tests.errors + $tests.failures" />
+                    <xsl:with-param name="total" select="$tests.grandtotal" />
+                    <xsl:with-param name="class">failed-progress</xsl:with-param>
+                </xsl:call-template>
             </div>
             <div id="details">
                 <xsl:apply-templates select="$tests.root" />
@@ -183,8 +262,8 @@
     <xsl:template match="test-results">
         <xsl:variable name="test.suite.id" select="generate-id()" />
         <xsl:variable name="test.suite.name" select="./@name"/>
-        <xsl:variable name="failure.count" select="count(.//results/test-case[@success='False'])" />
-        <xsl:variable name="ignored.count" select="count(.//results/test-case[@executed='False'])" />
+        <xsl:variable name="failure.count" select="count(.//results//test-case[@success='False'])" />
+        <xsl:variable name="ignored.count" select="count(.//results//test-case[@executed='False'])" />
 
         <!-- Suite status icon -->
         <xsl:choose>
@@ -218,11 +297,11 @@
             <xsl:attribute name="id">divDetails<xsl:value-of select="$test.suite.id"/></xsl:attribute>
             <blockquote>
                 <!-- Show unsuccessful tests at the top -->
-                <xsl:apply-templates select=".//test-suite[@type='TestFixture' and @success='False'][results/test-case]">
+                <xsl:apply-templates select=".//test-suite[@type='TestFixture' and @success='False'][results//test-case]">
                     <xsl:sort select="@name" order="ascending" data-type="text"/>
                 </xsl:apply-templates>
                 <!-- And then all successful tests -->
-                <xsl:apply-templates select=".//test-suite[@type='TestFixture' and @success='True'][results/test-case]" mode="success">
+                <xsl:apply-templates select=".//test-suite[@type='TestFixture' and @success='True'][results//test-case]" mode="success">
                     <xsl:sort select="@name" order="ascending" data-type="text"/>
                     <!-- ascending yields False, True, which is desired -->
                     <xsl:sort select="@success" order="ascending" data-type="text"/>
@@ -232,57 +311,63 @@
     </xsl:template>
 
     <xsl:template match="test-suite" mode="success">
-        <xsl:if test="count(results/test-case[@success='False']) + count(results/test-case[@executed='False']) = 0">
+        <xsl:if test="count(results//test-case[@success='False']) + count(results//test-case[@executed='False']) = 0">
             <xsl:apply-templates select="."/>
         </xsl:if>
     </xsl:template>
 
     <xsl:template match="test-suite">
-        <xsl:variable name="passedtests.list" select="results/test-case[@success='True']"/>
-        <xsl:variable name="ignoredtests.list" select="results/test-case[@executed='False']"/>
-        <xsl:variable name="failedtests.list" select="results/test-case[@success='False']"/>
-        <xsl:variable name="tests.count" select="count(results/test-case)"/>
+        <xsl:variable name="passedtests.list" select="results//test-case[@success='True']"/>
+        <xsl:variable name="ignoredtests.list" select="results//test-case[@executed='False']"/>
+        <xsl:variable name="failedtests.list" select="results//test-case[@success='False']"/>
+        <xsl:variable name="tests.count" select="count(results//test-case)"/>
         <xsl:variable name="passedtests.count" select="count($passedtests.list)"/>
         <xsl:variable name="ignoredtests.count" select="count($ignoredtests.list)"/>
         <xsl:variable name="failedtests.count" select="count($failedtests.list)"/>
 
-        <xsl:variable name="testName" select="@name"/>
+        <xsl:variable name="fixture.name">
+            <xsl:call-template name="getFullFixtureName">
+                <xsl:with-param name="node" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
         <div>
             <div class="progress-bar">
-                <xsl:if test="$passedtests.count > 0">
-                    <xsl:variable name="passedtests.countpercent" select="($passedtests.count * 100) div $tests.count"/>
-                    <div class="passed-progress">
-                        <xsl:attribute name="style">width: <xsl:value-of select="floor($passedtests.countpercent)"/>%</xsl:attribute>
-                        &#160;
-                    </div>
-                </xsl:if>
-                <xsl:if test="$ignoredtests.count > 0">
-                    <xsl:variable name="ignoredtests.countpercent" select="($ignoredtests.count * 100) div $tests.count"/>
-                    <div class="ignored-progress">
-                        <xsl:attribute name="style">width: <xsl:value-of select="floor($ignoredtests.countpercent)"/>%</xsl:attribute>
-                        &#160;
-                    </div>
-                </xsl:if>
-                <xsl:if test="$failedtests.count > 0">
-                    <xsl:variable name="failedtests.countpercent" select="($failedtests.count * 100) div $tests.count"/>
-                    <div class="failed-progress">
-                        <xsl:attribute name="style">width: <xsl:value-of select="floor($failedtests.countpercent)"/>%</xsl:attribute>
-                        &#160;
-                    </div>
-                </xsl:if>
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$passedtests.count" />
+                    <xsl:with-param name="total" select="$tests.count" />
+                    <xsl:with-param name="class">passed-progress</xsl:with-param>
+                </xsl:call-template>
+
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$ignoredtests.count" />
+                    <xsl:with-param name="total" select="$tests.count" />
+                    <xsl:with-param name="class">ignored-progress</xsl:with-param>
+                </xsl:call-template>
+
+                <xsl:call-template name="progressSegment">
+                    <xsl:with-param name="value" select="$failedtests.count" />
+                    <xsl:with-param name="total" select="$tests.count" />
+                    <xsl:with-param name="class">failed-progress</xsl:with-param>
+                </xsl:call-template>
             </div>
             <div class="plus">
                 <xsl:attribute name="id">imgTestCase_<xsl:value-of select="@name"/></xsl:attribute>
-                <xsl:attribute name="onClick">javascript:toggleDiv('imgTestCase_<xsl:value-of select="$testName"/>', 'divTest_<xsl:value-of select="$testName"/>');</xsl:attribute>
+                <xsl:attribute name="onClick">
+                    <xsl:text>javascript:toggleDiv('imgTestCase_</xsl:text>
+                    <xsl:value-of select="$fixture.name"/>
+                    <xsl:text>', 'divTest_</xsl:text>
+                    <xsl:value-of select="$fixture.name"/>
+                    <xsl:text>');</xsl:text>
+                </xsl:attribute>
             </div>
             <a>
-                <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-                <xsl:value-of select="@name"/>
+                <xsl:attribute name="name"><xsl:value-of select="$fixture.name"/></xsl:attribute>
+                <xsl:value-of select="$fixture.name"/>
             </a>
             (<xsl:value-of select="$passedtests.count"/>/<xsl:value-of select="$tests.count"/>)
 
             <div style="display:none">
-                <xsl:attribute name="id">divTest_<xsl:value-of select="$testName"/></xsl:attribute>
+                <xsl:attribute name="id">divTest_<xsl:value-of select="$fixture.name"/></xsl:attribute>
 
                 <xsl:apply-templates select="$failedtests.list"/>
                 <xsl:apply-templates select="$ignoredtests.list"/>
@@ -311,7 +396,7 @@
 
             <span class="test-name">
                 <xsl:call-template name="getTestName">
-                    <xsl:with-param name="name" select="@name"/>
+                    <xsl:with-param name="node" select="."/>
                 </xsl:call-template>
             </span>
 
@@ -332,17 +417,46 @@
             </xsl:choose>
         </div>
     </xsl:template>
+    <xsl:template name="getFullFixtureName">
+        <xsl:param name="node" />
+
+        <xsl:for-each select="ancestor::test-suite[@type='TestFixture']/@name">
+            <xsl:value-of select="." />
+            <xsl:text>.</xsl:text>
+        </xsl:for-each>
+        <xsl:value-of select="@name" />
+    </xsl:template>
+
     <xsl:template name="getTestName">
-        <xsl:param name="name"/>
-        <xsl:choose>
-            <xsl:when test="contains($name, '.')">
-                <xsl:call-template name="getTestName">
-                    <xsl:with-param name="name" select="substring-after($name, '.')"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="$name"/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <xsl:param name="node" />
+
+        <!-- Concatenate ancestor namespaces into: One.Two.Three.  -->
+        <xsl:variable name="namespace">
+            <xsl:for-each select="ancestor::test-suite[@type='Namespace']/@name">
+                <xsl:value-of select="." />
+                <xsl:text>.</xsl:text>
+            </xsl:for-each>
+        </xsl:variable>
+        <xsl:variable name="fixture.name">
+            <xsl:value-of select="ancestor::test-suite[@type='TestFixture']/@name" />
+        </xsl:variable>
+
+        <!-- Remove the namespace and fixture name from the test name -->
+        <xsl:value-of select="substring(@name, string-length($namespace) + 1 + string-length($fixture.name) + 1)" />
+    </xsl:template>
+
+    <xsl:template name="progressSegment">
+        <xsl:param name="value" />
+        <xsl:param name="total" />
+        <xsl:param name="class" />
+
+        <xsl:variable name="percent" select="($value * 100) div $total" />
+
+        <xsl:if test="$value > 0">
+            <div class="{$class}">
+                <xsl:attribute name="style">width: <xsl:value-of select="floor($percent * 100) div 100"/>%</xsl:attribute>
+                &#160;
+            </div>
+        </xsl:if>
     </xsl:template>
 </xsl:stylesheet>

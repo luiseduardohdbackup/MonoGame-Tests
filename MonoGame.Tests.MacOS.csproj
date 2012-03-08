@@ -63,8 +63,6 @@
     <Compile Include="GameTest+Properties.cs" />
     <Compile Include="MacOS\Program.cs" />
     <Compile Include="Interface\CommandLineInterface.cs" />
-    <Compile Include="Components\ClearComponent.cs" />
-    <Compile Include="Components\Draw2DComponent.cs" />
     <Compile Include="Components\DrawFrameNumberComponent.cs" />
     <Compile Include="Components\FrameCompareComponent.cs" />
     <Compile Include="Components\ImplicitDrawOrderComponent.cs" />
@@ -80,13 +78,8 @@
     <Compile Include="Components\UpdateGuard.cs" />
     <Compile Include="Components\VisualTestDrawableGameComponent.cs" />
     <Compile Include="Components\VisualTestGameComponent.cs" />
-    <Compile Include="Visual\FontVisualTest.cs" />
-    <Compile Include="Components\SpriteFontComponent.cs" />
-    <Compile Include="Components\SpriteShaderComponent.cs" />
-    <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
     <Compile Include="Components\TexturedQuadComponent.cs" />
-    <Compile Include="Visual\MiscVisualTest.cs" />
     <Compile Include="FramePixelData.cs" />
     <Compile Include="Desktop\FramePixelData.cs" />
     <Compile Include="Interface\AggregateTestFilter.cs" />
@@ -94,6 +87,13 @@
     <Compile Include="Interface\RunOptions.cs" />
     <Compile Include="Interface\TestEventListenerBase.cs" />
     <Compile Include="Interface\TestFilterAction.cs" />
+    <Compile Include="Components\FlexibleGameComponent.cs" />
+    <Compile Include="Visual\MiscellaneousTests.cs" />
+    <Compile Include="Visual\ShaderTest.cs" />
+    <Compile Include="Visual\SpriteBatchTest.cs" />
+    <Compile Include="Visual\SpriteFontTest.cs" />
+    <Compile Include="Visual\ViewportTest.cs" />
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.MacOS.csproj">

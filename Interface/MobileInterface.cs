@@ -23,7 +23,6 @@ namespace MonoGame.Tests.Interface {
 			}
 
 			CoreExtensions.Host.InitializeService ();
-			CoreExtensions.Host.InstallBuiltins ();
 
 			var assembly = Assembly.GetExecutingAssembly ();
 

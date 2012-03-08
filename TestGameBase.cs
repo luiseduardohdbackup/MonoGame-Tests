@@ -71,10 +71,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
 using Microsoft.Xna.Framework;
+
+using MonoGame.Tests.Components;
 
 #if IPHONE
 using MonoTouch.Foundation;
@@ -83,6 +86,8 @@ using MonoTouch.UIKit;
 
 namespace MonoGame.Tests {
 	class TestGameBase : Game, IFrameInfoSource {
+		private bool _isExiting;
+
 		public TestGameBase ()
 		{
 			Content.RootDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -103,12 +108,74 @@ namespace MonoGame.Tests {
 		public Predicate<FrameInfo> ExitCondition { get; set; }
 		public bool SuppressExtraUpdatesAndDraws { get; set; }
 
-		private bool _isExiting;
+		public event EventHandler<FrameInfoEventArgs> InitializeWith;
+		public event EventHandler<FrameInfoEventArgs> LoadContentWith;
+		public event EventHandler<FrameInfoEventArgs> UnloadContentWith;
+		public event EventHandler<FrameInfoEventArgs> DrawWith;
+		public event EventHandler<FrameInfoEventArgs> UpdateWith;
+		public event EventHandler<FrameInfoEventArgs> UpdateOncePerDrawWith;
 
-		public new void Run ()
+		public event EventHandler<FrameInfoEventArgs> PreLoadContentWith;
+		public event EventHandler<FrameInfoEventArgs> PreUnloadContentWith;
+		public event EventHandler<FrameInfoEventArgs> PreDrawWith;
+		public event EventHandler<FrameInfoEventArgs> PreUpdateWith;
+
+		public void ClearActions ()
 		{
+			InitializeWith = null;
+			LoadContentWith = null;
+			UnloadContentWith = null;
+			DrawWith = null;
+			UpdateWith = null;
+			UpdateOncePerDrawWith = null;
+
+			PreLoadContentWith = null;
+			PreUnloadContentWith = null;
+			PreDrawWith = null;
+			PreUpdateWith = null;
+		}
+
+		private void SafeRaise (EventHandler<FrameInfoEventArgs> handler)
+		{
+			if (handler != null)
+				handler (this, new FrameInfoEventArgs(FrameInfo));
+		}
+
+		protected override void Initialize ()
+		{
+			SafeRaise (InitializeWith);
+			base.Initialize ();
+		}
+
+		protected override void LoadContent ()
+		{
+			SafeRaise (PreLoadContentWith);
+			base.LoadContent ();
+			SafeRaise (LoadContentWith);
+		}
+
+		protected override void UnloadContent ()
+		{
+			SafeRaise (PreUnloadContentWith);
+			base.UnloadContent ();
+			SafeRaise (UnloadContentWith);
+		}
+
+		public new void Run (Predicate<FrameInfo> until = null)
+		{
+			if (until != null)
+				ExitCondition = until;
 #if XNA
-			base.Run ();
+			try {
+				base.Run ();
+			} finally {
+				// XNA (WinForms) leaves WM_QUIT hanging around
+				// in the message queue sometimes, and when it
+				// does, all future windows that are created are
+				// instantly killed.  So, we manually absorb any
+				// WM_QUIT that exists.
+				AbsorbQuitMessage ();
+			}
 #elif IPHONE || ANDROID
 			RunOnMainThreadAndWait();
 #else
@@ -164,6 +231,7 @@ namespace MonoGame.Tests {
 		}
 #endif
 
+		private readonly UpdateGuard _updateGuard = new UpdateGuard ();
 		protected override void Update (GameTime gameTime)
 		{
 			_frameInfo.AdvanceUpdate (gameTime);
@@ -172,7 +240,19 @@ namespace MonoGame.Tests {
 			if (_isExiting && SuppressExtraUpdatesAndDraws)
 				return;
 
+			SafeRaise (PreUpdateWith);
+
 			base.Update (gameTime);
+
+			if (_updateGuard.ShouldUpdate (FrameInfo))
+				UpdateOncePerDraw (gameTime);
+
+			SafeRaise (UpdateWith);
+		}
+
+		protected virtual void UpdateOncePerDraw (GameTime gameTime)
+		{
+			SafeRaise (UpdateOncePerDrawWith);
 		}
 
 		protected override void Draw (GameTime gameTime)
@@ -183,7 +263,9 @@ namespace MonoGame.Tests {
 			if (_isExiting && SuppressExtraUpdatesAndDraws)
 				return;
 
+			SafeRaise (PreDrawWith);
 			base.Draw (gameTime);
+			SafeRaise (DrawWith);
 		}
 
 		private void EvaluateExitCondition ()
@@ -196,5 +278,42 @@ namespace MonoGame.Tests {
 				Exit ();
 			}
 		}
+
+#if XNA
+		[StructLayout (LayoutKind.Sequential)]
+		public struct NativeMessage {
+			public IntPtr handle;
+			public uint msg;
+			public IntPtr wParam;
+			public IntPtr lParam;
+			public uint time;
+			public System.Drawing.Point p;
+		}
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool PeekMessage(
+			out NativeMessage msg, IntPtr hWnd,
+			uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
+
+		[DllImport ("user32.dll")]
+		private static extern int GetMessage (
+			out NativeMessage msg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+
+		const uint WM_QUIT = 0x12;
+
+		private static void AbsorbQuitMessage ()
+		{
+			NativeMessage msg;
+			if (!PeekMessage (out msg, IntPtr.Zero, 0, 0, 0))
+				return;
+
+			do {
+				int result = GetMessage (out msg, IntPtr.Zero, 0, 0);
+				if (result == -1)
+					return;
+			} while (msg.msg != WM_QUIT);
+		}
+#endif
 	}
 }
