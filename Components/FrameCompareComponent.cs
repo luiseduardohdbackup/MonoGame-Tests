@@ -69,7 +69,7 @@ non-infringement.
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Drawing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -79,7 +79,7 @@ using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using XnaColor = Microsoft.Xna.Framework.Color;
+using NUnit.Framework;
 
 // TODO: It's likely that a more sophisticated approach will be required for
 //       comparing images.  In particular, comparing pixel deltas would give
@@ -147,7 +147,6 @@ namespace MonoGame.Tests.Components {
 		}
 
 		private IFrameCaptureSource _frameSource;
-		private Predicate<FrameInfo> _capturePredicate;
 		private string _fileNameFormat;
 		private string _referenceImageDirectory;
 
@@ -159,21 +158,36 @@ namespace MonoGame.Tests.Components {
 		private readonly object _workThreadSync = new object ();
 
 		public FrameCompareComponent (
-			Game game, Predicate<FrameInfo> capturePredicate,
+			Game game, Predicate<FrameInfo> captureWhen,
 			string fileNameFormat, string referenceImageDirectory, string outputDirectory)
 			: base (game)
 		{
-			if (capturePredicate == null)
-				throw new ArgumentNullException ("capturePredicate");
 			if (fileNameFormat == null)
 				throw new ArgumentNullException ("fileNameFormat");
 			if (referenceImageDirectory == null)
 				throw new ArgumentNullException ("compareSourceDirectory");
 
-			_capturePredicate = capturePredicate;
+			CaptureWhen = captureWhen;
 			_fileNameFormat = fileNameFormat;
 			_referenceImageDirectory = referenceImageDirectory;
 			OutputDirectory = outputDirectory;
+		}
+
+		public static FrameCompareComponent CreateDefault (
+			Game game, Predicate<FrameInfo> captureWhen = null, int maxFrameNumber = 99)
+		{
+			var folderName = TestContext.CurrentContext.GetTestFolderName ();
+			var fileNameFormat = TestContext.CurrentContext.GetTestFrameFileNameFormat (maxFrameNumber);
+
+			return new FrameCompareComponent (
+				game,
+				captureWhen: captureWhen,
+				fileNameFormat: fileNameFormat,
+				referenceImageDirectory: Paths.ReferenceImage (folderName),
+				outputDirectory: Paths.CapturedFrame (folderName))
+				{
+					{ new PixelDeltaFrameComparer(), 1 }
+				};
 		}
 
 		protected override void Dispose (bool disposing)
@@ -188,6 +202,8 @@ namespace MonoGame.Tests.Components {
 			}
 			base.Dispose (disposing);
 		}
+
+		public Predicate<FrameInfo> CaptureWhen { get; set; }
 
 		private RunState _state = RunState.Idle;
 		private RunState State
@@ -250,7 +266,7 @@ namespace MonoGame.Tests.Components {
 			if (State == RunState.DidCaptureFrame)
 				ProcessCapturedFrame ();
 
-			if (State == RunState.Idle && _capturePredicate (frameInfo))
+			if (State == RunState.Idle && (CaptureWhen == null || CaptureWhen (frameInfo)))
 				ScheduleFrameCapture ();
 		}
 
@@ -376,9 +392,9 @@ namespace MonoGame.Tests.Components {
 			return similarity;
 		}
 
-		private XnaColor[] GetTextureData (Texture2D frame)
+		private Color[] GetTextureData (Texture2D frame)
 		{
-			var data = new XnaColor [frame.Width * frame.Height];
+			var data = new Color [frame.Width * frame.Height];
 			frame.GetData (data);
 			return data;
 		}
@@ -391,7 +407,7 @@ namespace MonoGame.Tests.Components {
 				// TODO: It would be nice to communicate
 				//       information about what went wrong, when
 				//       things go wrong.
-				return new FramePixelData (0, 0, new XnaColor[0]);
+				return new FramePixelData (0, 0, new Color[0]);
 			}
 		}
 
@@ -409,7 +425,7 @@ namespace MonoGame.Tests.Components {
 
 		private class WorkItem {
 			public readonly FrameInfo FrameInfo;
-			public readonly XnaColor [] TextureData;
+			public readonly Color [] TextureData;
 			public readonly int TextureWidth;
 			public readonly int TextureHeight;
 			public readonly string FrameOutputPath;
@@ -418,7 +434,7 @@ namespace MonoGame.Tests.Components {
 
 			public WorkItem (
 				FrameInfo frameInfo,
-				XnaColor [] textureData, int textureWidth, int textureHeight,
+				Color [] textureData, int textureWidth, int textureHeight,
 				string frameOutputPath, string referenceImagePath,
 				Tuple<IFrameComparer, float> [] frameComparers)
 			{

@@ -264,7 +264,7 @@ namespace MonoGame.Tests.Components
 		{
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			background = Game.Content.Load<Texture2D>(Paths.Texture("Background"));
+			background = Game.Content.Load<Texture2D>(Paths.Texture("fun-background"));
 
 			spaceship = new Spaceship();
 			spaceship.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(cameraFOV),

@@ -153,31 +153,4 @@ namespace MonoGame.Tests {
 		}
 	}
 
-	static class ServiceProviderExtensions {
-		public static void AddService<T> (this GameServiceContainer serviceProvider, T service)
-		{
-			serviceProvider.AddService (typeof (T), service);
-		}
-
-		public static T RequireService<T> (this IServiceProvider serviceProvider)
-		{
-			var service = (T) serviceProvider.GetService (typeof (T));
-			if (service == null)
-				throw new ServiceNotFoundException (typeof (T));
-			return service;
-		}
-	}
-
-	class ServiceNotFoundException : Exception {
-		public ServiceNotFoundException (Type serviceType)
-			: base(string.Format("Required service of type '{0}' was not found.", serviceType))
-		{
-			if (serviceType == null)
-				throw new ArgumentNullException ("serviceType");
-			ServiceType = serviceType;
-
-		}
-
-		public Type ServiceType { get; private set; }
-	}
 }

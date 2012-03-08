@@ -87,7 +87,6 @@ namespace MonoGame.Tests {
 			UpdateGameTime (gameTime);
 		}
 
-
 		public void AdvanceDraw (GameTime gameTime)
 		{
 			DrawNumber++;
@@ -113,5 +112,15 @@ namespace MonoGame.Tests {
 
 	interface IFrameInfoSource {
 		FrameInfo FrameInfo { get; }
+	}
+
+	class FrameInfoEventArgs : EventArgs {
+		public FrameInfoEventArgs (FrameInfo frameInfo)
+		{
+			_frameInfo = frameInfo;
+		}
+
+		private readonly FrameInfo _frameInfo;
+		public FrameInfo FrameInfo { get { return _frameInfo; } }
 	}
 }

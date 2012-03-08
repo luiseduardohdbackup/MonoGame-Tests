@@ -97,8 +97,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\ClearComponent.cs" />
-    <Compile Include="Components\Draw2DComponent.cs" />
     <Compile Include="Components\DrawFrameNumberComponent.cs" />
     <Compile Include="Components\FrameCompareComponent.cs" />
     <Compile Include="Components\ImplicitDrawOrderComponent.cs" />
@@ -118,16 +116,11 @@
     <Compile Include="FramePixelData.cs" />
     <Compile Include="iOS\FramePixelData.cs" />
     <Compile Include="Interface\MobileInterface.cs" />
-    <Compile Include="Visual\MiscVisualTest.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
-    <Compile Include="Components\SpriteFontComponent.cs" />
-    <Compile Include="Components\SpriteShaderComponent.cs" />
     <Compile Include="Components\TexturedQuadComponent.cs" />
     <Compile Include="GameTest.cs" />
     <Compile Include="GameTest+Methods.cs" />
     <Compile Include="GameTest+Properties.cs" />
-    <Compile Include="Visual\FontVisualTest.cs" />
-    <Compile Include="Visual\ShaderVisualTest.cs" />
     <Compile Include="Interface\CommandLineInterface.cs" />
     <Compile Include="Interface\AggregateTestFilter.cs" />
     <Compile Include="Interface\RegexTestFilter.cs" />
@@ -135,6 +128,13 @@
     <Compile Include="Interface\RunOptions.cs" />
     <Compile Include="Interface\TestEventListenerBase.cs" />
     <Compile Include="Interface\FileServer.cs" />
+    <Compile Include="Components\FlexibleGameComponent.cs" />
+    <Compile Include="Visual\MiscellaneousTests.cs" />
+    <Compile Include="Visual\ShaderTest.cs" />
+    <Compile Include="Visual\SpriteBatchTest.cs" />
+    <Compile Include="Visual\SpriteFontTest.cs" />
+    <Compile Include="Visual\ViewportTest.cs" />
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.iOS.csproj">

@@ -68,10 +68,14 @@ non-infringement
 
 using System;
 
+using NUnit.Framework;
+
+[assembly: RequiresSTA]
 namespace MonoGame.Tests
 {
 	static class Program
 	{
+		[STAThread]
 		static void Main(string [] args)
 		{
 			CommandLineInterface.RunMain(args);

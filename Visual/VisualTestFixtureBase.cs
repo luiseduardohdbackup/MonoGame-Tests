@@ -68,6 +68,7 @@ non-infringement.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -84,35 +85,114 @@ namespace MonoGame.Tests.Visual {
 		protected VisualTestGame Game { get { return _game; } }
 
 		[SetUp]
-		public void SetUp ()
+		public virtual void SetUp ()
 		{
 			Paths.SetStandardWorkingDirectory();
 			_game = new VisualTestGame ();
+			_game.ExitCondition = x => x.DrawNumber > 1;
 		}
 
 		[TearDown]
-		public void TearDown ()
+		public virtual void TearDown ()
 		{
 			_game.Dispose ();
 			_game = null;
 		}
 
-		protected static void WriteFrameDiffsAndAssertComparisonPassed (
-			IEnumerable<FrameComparisonResult> results, string diffDirectory,
-			float threshold, int expectedCount)
+		/// <summary>
+		/// Provides a quick and easy way to run a single frame visual
+		/// test with the default comparison and diff-writing options.
+		/// Tests that need more control over the run-diff-assert
+		/// process should manually call:
+		/// 
+		/// <code>
+		/// Game.Components.Add ($FrameCompareComponent$);
+		/// Game.Run ();
+		/// WriteFrameDiffs ();
+		/// AssertFrameComparisonPassed ();
+		/// </code>
+		/// </summary>
+		/// <param name="similarity">The similarity to the reference
+		/// image required for a frame to be considered passing.</param>
+		/// <param name="writeDiffs">A value indicating whether visual
+		/// diffs should be written for this test.</param>
+		protected void RunSingleFrameTest (
+			float similarity = Constants.StandardRequiredSimilarity,
+			bool writeDiffs = true)
 		{
-			WriteFrameComparisonDiffs (results, diffDirectory);
-			AssertFrameComparisonResultsPassed (results, threshold, expectedCount);
+			RunMultiFrameTest (1, 1, similarity, writeDiffs);
 		}
 
-		protected static void AssertFrameComparisonResultsPassed (
-			IEnumerable<FrameComparisonResult> results, float threshold, int expectedCount)
+		/// <summary>
+		/// Provides a quick and easy way to run a multi-frame visual
+		/// test using the default comparison and diff-writing options.
+		/// Tests that need more control over the run-diff-assert
+		/// process should manually call:
+		/// 
+		/// <code>
+		/// Game.Components.Add ($FrameCompareComponent$);
+		/// Game.Run ();
+		/// WriteFrameDiffs ();
+		/// AssertFrameComparisonPassed ();
+		/// </code>
+		/// </summary>
+		/// <param name="captureCount">The total number of frames to
+		/// capture.</param>
+		/// <param name="captureStride">How often to capture.  A value
+		/// of 1 captures every frame, 2 captures every other, etc.
+		/// </param>
+		/// <param name="similarity">The similarity to the reference
+		/// image required for a frame to be considered passing.</param>
+		/// <param name="writeDiffs">A value indicating whether visual
+		/// diffs should be written for this test.</param>
+		protected void RunMultiFrameTest (
+			int captureCount,
+			int captureStride = 1,
+			float similarity = Constants.StandardRequiredSimilarity,
+			bool writeDiffs = true)
+		{
+			if (captureCount < 1)
+				throw new ArgumentOutOfRangeException (
+					"captureCount", "captureCount must be positive");
+			if (captureStride < 1)
+				throw new ArgumentOutOfRangeException (
+					"captureStride", "captureStride must be positive");
+
+			if (!Game.Components.Any (x => x is FrameCompareComponent))
+				Game.Components.Add (FrameCompareComponent.CreateDefault (
+					Game,
+					captureWhen: x => x.DrawNumber % captureStride == 0,
+					maxFrameNumber: captureCount * captureStride));
+
+			Game.Run (until: x => x.DrawNumber > captureCount * captureStride);
+			if (writeDiffs)
+				WriteFrameDiffs ();
+			AssertFrameComparisonPassed (similarity: similarity, expectedCount: captureCount);
+		}
+
+		protected void AssertFrameComparisonPassed (
+			float similarity = Constants.StandardRequiredSimilarity,
+			int expectedCount = 1)
+		{
+			var folderName = TestContext.CurrentContext.GetTestFolderName ();
+			bool found = false;
+			foreach (var frameCompareComponent in Game.Components.OfType<FrameCompareComponent> ()) {
+				AssertFrameComparisonPassed (frameCompareComponent.Results, similarity, expectedCount);
+				found = true;
+			}
+
+			if (!found)
+				Assert.Fail ("No FrameCompareComponents were found.");
+		}
+
+		protected static void AssertFrameComparisonPassed (
+			IEnumerable<FrameComparisonResult> results, float similarity, int expectedCount)
 		{
 			var allResults = new List<FrameComparisonResult> ();
 			var failedResults = new List<FrameComparisonResult> ();
 			foreach (var result in results) {
 				allResults.Add (result);
-				if (result.Similarity < threshold)
+				if (result.Similarity < similarity)
 					failedResults.Add (result);
 			}
 
@@ -121,7 +201,7 @@ namespace MonoGame.Tests.Visual {
 					"Expected {0} frame comparison result(s), but found {1}",
 					expectedCount, allResults.Count);
 
-			WriteComparisonResultReport (allResults, threshold);
+			WriteComparisonResultReport (allResults, similarity);
 
 			if (failedResults.Count > 0) {
 				Assert.Fail (
@@ -131,16 +211,29 @@ namespace MonoGame.Tests.Visual {
 		}
 
 		private static void WriteComparisonResultReport (
-			IEnumerable<FrameComparisonResult> results, float threshold)
+			IEnumerable<FrameComparisonResult> results, float similarity)
 		{
-			Console.WriteLine ("Required similarity: {0:0.####}", threshold);
+			Console.WriteLine ("Required similarity: {0:0.####}", similarity);
 			foreach (var result in results)
 				Console.WriteLine (
 					"Similarity: {0:0.####}, Capture: {1}, Reference: {2}",
 					result.Similarity, result.CapturedImagePath, result.ReferenceImagePath);
 		}
 
-		protected static void WriteFrameComparisonDiffs (
+		protected void WriteFrameDiffs ()
+		{
+			var folderName = TestContext.CurrentContext.GetTestFolderName ();
+			bool found = false;
+			foreach (var frameCompareComponent in Game.Components.OfType<FrameCompareComponent> ()) {
+				WriteFrameDiffs (frameCompareComponent.Results, Paths.CapturedFrameDiff (folderName));
+				found = true;
+			}
+
+			if (!found)
+				Assert.Fail ("No FrameCompareComponents were found.");
+		}
+
+		protected static void WriteFrameDiffs (
 			IEnumerable<FrameComparisonResult> results, string directory)
 		{
 			try {
@@ -228,64 +321,6 @@ namespace MonoGame.Tests.Visual {
 
 				frame.Data[i] = pixel;
 			}
-		}
-
-		//routines to do simple testing of drawing components
-		protected void TestComponents(string testImageName,
-		                              IGameComponent[] components,
-		                              string frameFolder,
-		                              int framesToDraw = 1)
-		{
-			foreach (var component in components)
-			{
-				Game.Components.Add (component);
-			}
-
-			var frameComparer = new FrameCompareComponent (
-				Game, x => true,
-				testImageName + "-{0:00}.png",
-				Paths.ReferenceImage (frameFolder),
-				Paths.CapturedFrame (frameFolder)) {
-					{ new PixelDeltaFrameComparer (), 1 },
-				};
-			Game.Components.Add (frameComparer);
-
-			Game.ExitCondition = x => x.DrawNumber > framesToDraw;
-			Game.Run ();
-
-			WriteFrameComparisonDiffs (
-				frameComparer.Results,
-				Paths.CapturedFrameDiff (frameFolder));
-			AssertFrameComparisonResultsPassed (
-				frameComparer.Results, Constants.StandardRequiredSimilarity, framesToDraw);
-		}
-
-		protected void TestComponents(IGameComponent[] components,
-		                              string frameFolder,
-		                              int framesToDraw = 1)
-		{
-			var stackTrace = new System.Diagnostics.StackTrace ();
-			var name = stackTrace.GetFrame (1).GetMethod ().Name;
-
-			TestComponents (name, components, frameFolder, framesToDraw);
-		}
-
-		protected void TestComponent(string testImageName,
-		                             IGameComponent component,
-		                             string frameFolder,
-		                             int framesToDraw = 1)
-		{
-			TestComponents(testImageName, new IGameComponent[] {component}, frameFolder, framesToDraw);
-		}
-
-		protected void TestComponent(IGameComponent component,
-		                             string frameFolder,
-		                             int framesToDraw = 1)
-		{
-			var stackTrace = new System.Diagnostics.StackTrace ();
-			var name = stackTrace.GetFrame (1).GetMethod ().Name;
-
-			TestComponents(name, new IGameComponent[] {component}, frameFolder, framesToDraw);
 		}
 	}
 }
