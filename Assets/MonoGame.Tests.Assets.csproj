@@ -99,10 +99,10 @@
     <Content Include="ReferenceImages\Miscellaneous\SpaceshipModel-19.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="ReferenceImages\Miscellaneous\TexturedQuad_lighting.png">
+    <Content Include="ReferenceImages\Miscellaneous\TexturedQuad_lighting_True_.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="ReferenceImages\Miscellaneous\TexturedQuad_no_lighting.png">
+    <Content Include="ReferenceImages\Miscellaneous\TexturedQuad_lighting_False_.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ReferenceImages\Shader\Shader__Bevels__.png">

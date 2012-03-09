@@ -118,30 +118,19 @@ namespace MonoGame.Tests.Visual {
 			RunSingleFrameTest ();
 		}
 		
-		// FIXME: Temporarily disabled because Linux doesn't have the
-		//        right DrawUserPrimitives overload.
-//		[Test]
-//		public void TexturedQuad_no_lighting ()
-//		{
-//			Game.Components.Add (new TexturedQuadComponent (Game, false));
-//			RunSingleFrameTest ();
-//		}
-//
-//		[Test]
-//		public void TexturedQuad_lighting ()
-//		{
-//			Game.Components.Add (new TexturedQuadComponent (Game, true));
-//			RunSingleFrameTest ();
-//		}
+		[TestCase(true)]
+		[TestCase(false)]
+		public void TexturedQuad_lighting (bool enableLighting)
+		{
+			Game.Components.Add (new TexturedQuadComponent (Game, enableLighting));
+			RunSingleFrameTest ();
+		}
 
-		// FIXME: Temporarily disabled until develop3d has replaced
-		//        develop or someone adds enough Model* stub classes to
-		//        at least allow this to compile.
-//		[Test]
-//		public void SpaceshipModel ()
-//		{
-//			Game.Components.Add (new SpaceshipModelDrawComponent(Game));
-//			RunMultiFrameTest (captureCount: 10, captureStride: 2);
-//		}
+		[Test]
+		public void SpaceshipModel ()
+		{
+			Game.Components.Add (new SpaceshipModelDrawComponent(Game));
+			RunMultiFrameTest (captureCount: 10, captureStride: 2);
+		}
 	}
 }

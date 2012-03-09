@@ -82,6 +82,7 @@
     <Compile Include="Components\FrameCompareComponent.cs" />
     <Compile Include="Components\ImplicitDrawOrderComponent.cs" />
     <Compile Include="Components\PixelDeltaFrameComparer.cs" />
+    <Compile Include="Components\SpaceshipModelDrawComponent.cs" />
     <Compile Include="Components\UpdateGuard.cs" />
     <Compile Include="Components\VisualTestDrawableGameComponent.cs" />
     <Compile Include="Components\VisualTestGameComponent.cs" />

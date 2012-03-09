@@ -218,7 +218,6 @@ namespace MonoGame.Tests.Components
 			/// <param name="lights"></param>
 			private void SetEffectLights(BasicEffect effect, bool[] lights)
 			{
-	
 				effect.Alpha = 1.0f;
 				effect.DiffuseColor = new Vector3(0.75f, 0.75f, 0.75f);
 				effect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
