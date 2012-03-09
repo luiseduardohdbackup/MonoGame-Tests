@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lidgren.Network.iOS", "..\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Tests.Assets.iOS", "Assets\MonoGame.Tests.Assets.iOS.csproj", "{F759DE08-E160-4BB4-9A09-404D5694A4EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.InteractiveTests.iOS", "Interactive\iOS\MonoGame.InteractiveTests.iOS.csproj", "{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|iPhoneSimulator = Debug|iPhoneSimulator
@@ -49,9 +51,17 @@ Global
 		{F759DE08-E160-4BB4-9A09-404D5694A4EC}.Release|iPhone.Build.0 = Release|Any CPU
 		{F759DE08-E160-4BB4-9A09-404D5694A4EC}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{F759DE08-E160-4BB4-9A09-404D5694A4EC}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Debug|iPhone.Build.0 = Debug|iPhone
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Release|iPhone.ActiveCfg = Release|iPhone
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Release|iPhone.Build.0 = Release|iPhone
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{FD07CA6D-A40E-4D8F-9F4D-C90389A97DDE}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = MonoGame.Tests.iOS.csproj
+		StartupItem = Interactive\iOS\MonoGame.InteractiveTests.iOS.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.inheritsSet = null
