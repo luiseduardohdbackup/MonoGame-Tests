@@ -27,13 +27,13 @@ namespace MonoGame.Tests {
 
 		public static string ReplaceInvalidFileNameChars (this string self)
 		{
-			var pattern = "[" + Regex.Escape ("()," + new string (Path.GetInvalidFileNameChars ())) + "]";
+			var pattern = "[" + Regex.Escape ("{}()," + new string (Path.GetInvalidFileNameChars ())) + "]";
 			return Regex.Replace (self, pattern, "_");
 		}
 
 		public static string ReplaceInvalidPathChars (this string self)
 		{
-			var pattern = "[" + Regex.Escape ("()," + new string (Path.GetInvalidPathChars ())) + "]";
+			var pattern = "[" + Regex.Escape ("{}()," + new string (Path.GetInvalidPathChars ())) + "]";
 			return Regex.Replace (self, pattern, "_");
 		}
 
