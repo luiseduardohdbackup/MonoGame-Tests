@@ -180,6 +180,21 @@
     <Content Include="ReferenceImages\SpriteBatch\Draw_with_filter_color__Teal__.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ReferenceImages\SpriteBatch\Draw_with_matrix_0_.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReferenceImages\SpriteBatch\Draw_with_matrix_1_.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReferenceImages\SpriteBatch\Draw_with_matrix_2_.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReferenceImages\SpriteBatch\Draw_with_matrix_3_.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReferenceImages\SpriteBatch\Draw_with_matrix_4_.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="ReferenceImages\SpriteBatch\Draw_with_source_and_dest_rect_10_10_40_40_.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

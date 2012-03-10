@@ -189,6 +189,34 @@ namespace MonoGame.Tests.Visual {
 			RunSingleFrameTest ();
 		}
 
+		private static readonly Matrix [] Matrices = new Matrix [] {
+			Matrix.Identity,
+			Matrix.CreateRotationZ(0.25f),
+			Matrix.CreateScale(2),
+			Matrix.CreateTranslation(30, 40, 0),
+			Matrix.CreateRotationZ(0.9f) * Matrix.CreateScale(2) * Matrix.CreateTranslation(128, 32, 0)
+		};
+
+		// Note that [Range(0, Matrices.Length -1)] is in use here,
+		// rather then [TestCaseSource("Matrices")].  Passing the matrix
+		// in directly results in an enormous test name (and captured
+		// image filename).
+		[Test]
+		public void Draw_with_matrix ([Range(0, 4)]int matrixIndex)
+		{
+			var matrix = Matrices [matrixIndex];
+
+			Game.DrawWith += (sender, e) => {
+				_spriteBatch.Begin (
+					SpriteSortMode.Immediate, BlendState.AlphaBlend,
+					null, null, null, null, matrix);
+				_spriteBatch.Draw (_texture, new Vector2(10, 10), Color.White);
+				_spriteBatch.End ();
+			};
+
+			RunSingleFrameTest ();
+		}
+
 		// FIXME: This scissoring code is not valid in XNA. It
 		//        complains about RasterizerState being
 		//        immutable after it's bound to a
