@@ -95,6 +95,8 @@
     <Compile Include="Components\VisualTestDrawableGameComponent.cs" />
     <Compile Include="Components\VisualTestGameComponent.cs" />
     <Compile Include="Components\Colored3DCubeComponent.cs" />
+    <Compile Include="Framework\Bounding.cs" />
+    <Compile Include="Framework\RayTest.cs" />
     <Compile Include="Interface\AggregateTestFilter.cs" />
     <Compile Include="Interface\RegexTestFilter.cs" />
     <Compile Include="Interface\RunOptions.cs" />
